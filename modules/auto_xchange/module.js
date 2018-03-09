@@ -103,14 +103,14 @@ function extractNumber(str) {
     return 0;
 }
 
-function sendReplyTweet(client, original_tweet, text) {
-    const screenName = original_tweet.user.screen_name;
+function sendReplyToot(client, originalStatus, text) {
+    const screenName = originalStatus.account.acct;
     const message = `@${screenName} ${text}`;
 
     if (screenName !== botScreenName) {
-        client.post('statuses/update', {
+        client.post('/api/v1/statuses', {
             status: message,
-            in_reply_to_status_id: original_tweet.id_str
+            in_reply_to_id: originalStatus.id
         }, (error) => {
             console.log(error);
             console.log(text);
@@ -136,7 +136,7 @@ function fcc(args) {
                         message = message.replace('$3', args.currency.screen);
                         message = message.replace('$4', (Math.round(args.value * rate)).toLocaleString());
 
-                        sendReplyTweet(args.client, args.tweet, message);
+                        sendReplyToot(args.client, args.status, message);
                     } else {
                         let message = config.output_message.psuedo;
                         console.log(args.currency.calculate.replace(/value/gi, args.value));
@@ -146,13 +146,13 @@ function fcc(args) {
                         message = message.replace('$3', args.currency.screen);
                         message = message.replace('$4', (Math.round(eval(args.currency.calculate.replace(/value/gi, args.value)) * rate)).toLocaleString());
 
-                        sendReplyTweet(args.client, args.tweet, message);
+                        sendReplyToot(args.client, args.status, message);
                     }
                 } else {
-                    sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(fcc)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                    sendReplyToot(args.client, args.status, '현재 환율 시스템(fcc)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
                 }
             } else {
-                sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(fcc)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                sendReplyToot(args.client, args.status, '현재 환율 시스템(fcc)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
             }
         });
     } else if (args.currency.psuedo) {
@@ -164,7 +164,7 @@ function fcc(args) {
         message = message.replace('$3', args.currency.screen);
         message = message.replace('$4', (Math.round(eval(args.currency.calculate.replace(/value/gi, args.value)))).toLocaleString());
 
-        sendReplyTweet(args.client, args.tweet, message);
+        sendReplyToot(args.client, args.status, message);
     }
 }
 
@@ -183,12 +183,12 @@ function korbit(args) {
                 message = message.replace('$3', args.currency.screen);
                 message = message.replace('$4', (Math.round(args.value * rate)).toLocaleString());
 
-                sendReplyTweet(args.client, args.tweet, message);
+                sendReplyToot(args.client, args.status, message);
             } else {
-                sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(korbit)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                sendReplyToot(args.client, args.status, '현재 환율 시스템(korbit)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
             }
         } else {
-            sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(korbit)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+            sendReplyToot(args.client, args.status, '현재 환율 시스템(korbit)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
         }
     });
 }
@@ -223,12 +223,12 @@ function fcc_material(args) {
                     message = message.replace('$4', `${units}는`);
                     message = message.replace('$5', (Math.round((args.value * rate * unit_multiplier) / tr_ounce)).toLocaleString());
 
-                    sendReplyTweet(args.client, args.tweet, message);
+                    sendReplyToot(args.client, args.status, message);
                 } else {
-                    sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(fcc)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                    sendReplyToot(args.client, args.status, '현재 환율 시스템(fcc)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
                 }
             } else {
-                sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(fcc)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                sendReplyToot(args.client, args.status, '현재 환율 시스템(fcc)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
             }
         });
     } else if (args.currency.psuedo) {
@@ -240,7 +240,7 @@ function fcc_material(args) {
         message = message.replace('$3', args.currency.screen);
         message = message.replace('$4', (Math.round(eval(args.currency.calculate.replace(/value/gi, args.value)))).toLocaleString());
 
-        sendReplyTweet(args.client, args.tweet, message);
+        sendReplyToot(args.client, args.status, message);
     }
 }
 
@@ -262,7 +262,7 @@ function manana(args) {
                         message = message.replace('$3', args.currency.screen);
                         message = message.replace('$4', (Math.round(args.value * rate)).toLocaleString());
 
-                        sendReplyTweet(args.client, args.tweet, message);
+                        sendReplyToot(args.client, args.status, message);
                     } else {
                         let message = config.output_message.psuedo;
                         console.log(args.currency.calculate.replace(/value/gi, args.value));
@@ -272,13 +272,13 @@ function manana(args) {
                         message = message.replace('$3', args.currency.screen);
                         message = message.replace('$4', (Math.round(eval(args.currency.calculate.replace(/value/gi, args.value)) * rate)).toLocaleString());
 
-                        sendReplyTweet(args.client, args.tweet, message);
+                        sendReplyToot(args.client, args.status, message);
                     }
                 } else {
-                    sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(manana)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                    sendReplyToot(args.client, args.status, '현재 환율 시스템(manana)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
                 }
             } else {
-                sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(manana)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                sendReplyToot(args.client, args.status, '현재 환율 시스템(manana)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
             }
         });
     } else if (args.currency.psuedo) {
@@ -290,7 +290,7 @@ function manana(args) {
         message = message.replace('$3', args.currency.screen);
         message = message.replace('$4', (Math.round(eval(args.currency.calculate.replace(/value/gi, args.value)))).toLocaleString());
 
-        sendReplyTweet(args.client, args.tweet, message);
+        sendReplyToot(args.client, args.status, message);
     }
 }
 
@@ -324,12 +324,12 @@ function manana_material(args) {
                     message = message.replace('$4', `${units}는`);
                     message = message.replace('$5', (Math.round((args.value * rate * unit_multiplier) / tr_ounce)).toLocaleString());
 
-                    sendReplyTweet(args.client, args.tweet, message);
+                    sendReplyToot(args.client, args.status, message);
                 } else {
-                    sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(manana)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                    sendReplyToot(args.client, args.status, '현재 환율 시스템(manana)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
                 }
             } else {
-                sendReplyTweet(args.client, args.tweet, '현재 환율 시스템(manana)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
+                sendReplyToot(args.client, args.status, '현재 환율 시스템(manana)에 오류가 있는 것 같아요. @shiftpsh에게 문의해 주세요.');
             }
         });
     } else if (args.currency.psuedo) {
@@ -341,13 +341,18 @@ function manana_material(args) {
         message = message.replace('$3', args.currency.screen);
         message = message.replace('$4', (Math.round(eval(args.currency.calculate.replace(/value/gi, args.value)))).toLocaleString());
 
-        sendReplyTweet(args.client, args.tweet, message);
+        sendReplyToot(args.client, args.status, message);
     }
 }
 
-
-exports.process = (client, tweet) => {
-    const { text } = tweet;
+/**
+ * Recives status and mastodon client, and exchange it.
+ * 
+ * @param {Mastodon} client 
+ * @param {Status} status 
+ */
+exports.process = (client, status) => {
+    const { text: content } = status;
 
     const enabled = true;
 
@@ -363,11 +368,11 @@ exports.process = (client, tweet) => {
                 let { code } = currency;
                 if (currency.psuedo) code = currency.original_code;
 
-                console.log(`[xchange] Parsed: @${tweet.user.screen_name}: ${text}`);
+                console.log(`[xchange] Parsed: @${status.account.acct}: ${text}`);
                 console.log(`[xchange] Requesting conversion: ${value} ${currency.code}`);
 
                 const params = {
-                    text, code, currency, value, client, tweet
+                    text, code, currency, value, client, status
                 };
 
                 if (currency.endpoint === 'fcc') fcc(params);

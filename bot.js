@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const Twitter = require('twitter');
+const Mastodon = require('mastodon-api');
 const gm = require('gm').subClass({ imageMagick: true });
 const fs = require('fs');
 const request = require('request');
@@ -9,14 +9,11 @@ const path = require('path');
 
 const botScreenName = process.env.BOT_SCREEN_NAME;
 
-const client = new Twitter({
-    consumer_key: process.env.CONSUMER_KEY,
-    consumer_secret: process.env.CONSUMER_SECRET,
-    access_token_key: process.env.ACCESS_TOKEN_KEY,
-    access_token_secret: process.env.ACCESS_TOKEN_SECRET
+const mastodon = new Mastodon({
+    access_token: process.env.ACCESS_TOKEN
 });
 
-const modules = [];
+var modules = [];
 
 function init() {
     fs.readdirSync(path.join(__dirname, 'modules')).forEach((file) => {
@@ -32,51 +29,37 @@ function init() {
 
 init();
 
-let stream = null;
-let timer = null;
+let stream = mastodon.stream('/api/v1/streaming/user');
 let calm = 1;
+stream.on('update', (event) => {
+    if (!event.data.reblogged) {
+        for (let moduleIndex = 0; moduleIndex < modules.length; moduleIndex++) {
+            modules[moduleIndex].process(client, event.data);
+        }
 
-function initStream() {
-    clearTimeout(timer);
-    if (stream == null || !stream.active) {
-        client.stream('statuses/filter', {
-            track: `@${botScreenName}`
-        }, (myStream) => {
-            clearTimeout(timer);
-            stream = myStream;
-            stream.active = true;
-            stream.on('data', (event) => {
-                if (!event.retweeted_status) {
-                    for (let moduleIndex = 0; moduleIndex < modules.length; moduleIndex++) {
-                        modules[moduleIndex].process(client, event);
-                    }
-
-                    console.log(event && event.user.screen_name);
-                } else {
-                    console.log(event && (`${event.user.screen_name} (RT)`));
-                }
-            });
-            stream.on('error', (error) => {
-                if (error.message === 'Status Code: 420') {
-                    calm++;
-                }
-                console.log(error);
-            });
-            stream.on('end', () => {
-                stream.active = false;
-                clearTimeout(timer);
-                timer = setTimeout(() => {
-                    clearTimeout(timer);
-                    if (stream.active) {
-                        stream.destroy();
-                    } else {
-                        initStream();
-                    }
-                }, 1000 * calm * calm);
-            });
-        });
+        console.log(event && event.user.screen_name);
+    } else {
+        console.log(event && (`${event.user.screen_name} (RT)`));
     }
-}
+});
+stream.on('error', (error) => {
+    if (error.message === 'Status Code: 420') {
+        calm++;
+    }
+    console.error(error);
+});
+stream.on('end', () => {
+    stream.active = false;
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+        clearTimeout(timer);
+        if (stream.active) {
+            stream.destroy();
+        } else {
+            initStream();
+        }
+    }, 1000 * calm * calm);
+});
 
 initStream();
 
