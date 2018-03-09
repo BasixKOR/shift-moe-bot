@@ -347,12 +347,12 @@ function manana_material(args) {
 
 /**
  * Recives status and mastodon client, and exchange it.
- * 
- * @param {Mastodon} client 
- * @param {Status} status 
+ *
+ * @param {Mastodon} client
+ * @param {Status} status
  */
 exports.process = (client, status) => {
-    const { text: content } = status;
+    const text = status.content;
 
     const enabled = true;
 

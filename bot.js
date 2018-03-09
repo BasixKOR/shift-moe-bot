@@ -7,13 +7,11 @@ const request = require('request');
 const moment = require('moment-timezone');
 const path = require('path');
 
-const botScreenName = process.env.BOT_SCREEN_NAME;
-
 const mastodon = new Mastodon({
     access_token: process.env.ACCESS_TOKEN
 });
 
-var modules = [];
+const modules = [];
 
 function init() {
     fs.readdirSync(path.join(__dirname, 'modules')).forEach((file) => {
@@ -29,12 +27,12 @@ function init() {
 
 init();
 
-let stream = mastodon.stream('/api/v1/streaming/user');
+const stream = mastodon.stream('/api/v1/streaming/user');
 let calm = 1;
 stream.on('update', (event) => {
     if (!event.data.reblogged) {
         for (let moduleIndex = 0; moduleIndex < modules.length; moduleIndex++) {
-            modules[moduleIndex].process(client, event.data);
+            modules[moduleIndex].process(mastodon, event.data);
         }
 
         console.log(event && event.user.screen_name);
@@ -48,26 +46,13 @@ stream.on('error', (error) => {
     }
     console.error(error);
 });
-stream.on('end', () => {
-    stream.active = false;
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-        clearTimeout(timer);
-        if (stream.active) {
-            stream.destroy();
-        } else {
-            initStream();
-        }
-    }, 1000 * calm * calm);
-});
-
-initStream();
 
 function base64_encode(file) {
     return fs.readFileSync(file, 'base64');
 }
 
 function updateHeader() {
+    return; // FIXME: 현재 라이브러리의 한계로 API에서 요구하는 PATCH 요청을 보낼 수 없음.
     request('http://free.currencyconverterapi.com/api/v3/convert?q=USD_KRW&compact=y', (usd_error, usd_response, usd_body) => {
         if (!usd_body) return;
         console.log(usd_body);
@@ -109,8 +94,8 @@ function updateHeader() {
 
                         const data = base64_encode('temp.png');
 
-                        client.post('account/update_profile_banner', {
-                            banner: data, width: 1500, height: 421
+                        client.post('account/update_profile_banner', { // FIXME: 이후 PATCH 요청이 가능해질 때 수정해야 함.
+                            banner: data, width: 1500, height: 421 // vanita5/mastodon-api 이슈 # 6
                         }, (error) => {
                             console.log(error);
                         });
